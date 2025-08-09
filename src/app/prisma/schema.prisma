@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Airport{
+  id            Int     @id @default(autoincrement())
+  airport_name  String
+  city          String
+  zipcode       String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  
+  arrivingFlights  Flight[] @relation("ArrivalAirport")
+  departingFlights Flight[] @relation("DepartureAirport")
+}
+model Flight{
+  id                    Int    @id @default(autoincrement())
+
+  arrival_airport_id   Int
+  arrivalAirport       Airport  @relation("ArrivalAirport", fields: [arrival_airport_id], references: [id])
+
+  departure_airport_id Int
+  departureAirport     Airport  @relation("DepartureAirport", fields: [departure_airport_id], references: [id])
+
+  price                 Int
+  total_seats           Int
+  avaliable_seats       Int
+  booking              Booking[]            
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+enum Role {
+  USER
+  ADMIN
+}
+model User{
+  id       Int     @id @default(autoincrement())
+  name     String 
+  email    String  @unique
+  password String
+  role     Role    @default(USER)
+  booking Booking[]
+}
+model Booking{
+  id                  Int      @id @default(autoincrement())
+  user_id             Int   
+  user                User     @relation(fields: [user_id] , references: [id])
+
+  flight_id Int
+  flight               Flight  @relation(fields:[flight_id] , references :[id]) 
+  
+  total_seats_booked  Int
+  total_price         Float  
+  
+
+}
